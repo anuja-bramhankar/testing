@@ -1,54 +1,58 @@
-package com.psl.training;
+package com.psl.training.controllers;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.psl.training.controllers.RegistrationController;
-import com.psl.training.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.psl.training.entity.AppointmentEntry;
+import com.psl.training.entity.User;
 import com.psl.training.service.UserService;
 
-
-@SpringBootTest
-@WebAppConfiguration
-@ContextConfiguration
-
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes= {LoginController.class})
+//@SpringBootTest(properties = "spring.main.lazy-initialization=true",classes= {com.psl.training.config.GabsApplication.class})
+@AutoConfigureMockMvc
 public class LoginControllerTest {
-	
-	@Autowired
-	UserService serviceU;
 
-	@Autowired
-	UserRepository repositoryU;
+	@MockBean
+	UserService serviceU;
 	
 	@Autowired
-	RegistrationController Rcontroller;
-	
-	
-	MockMvc lmvc;
-	
-	 user.setuserName("Anuja");
-	 user.setpassword("123");
+	private MockMvc mockmvc;
 	
 	@Test
-	public void insertUser() throws Exception{
-		 lmvc.perform( MockMvcRequestBuilders
-		            .post("/login")
-		            .accept(MediaType.APPLICATION_JSON))
-		            .andDo(print())
-		            .andExpect(status().isOk())
-		            .andExpect(MockMvcResultMatchers.jsonPath("$.userNmae").value("Anuja"))
-		            .andExpect(MockMvcResultMatchers.jsonPath("$.password").value("123"));
-
-		}
-
+	public void testLoginUser() throws Exception{
+		
+		User user=new  User();
+		
+		ObjectMapper mapper= new ObjectMapper();
+		String appJson=mapper.writeValueAsString(user);
+		
+		MockHttpServletRequestBuilder req=MockMvcRequestBuilders.post("/login")
+		.contentType(MediaType.APPLICATION_JSON)
+		.content(appJson);
+		
+		ResultActions perform=mockmvc.perform(req);
+		MvcResult andReturn=perform.andReturn();
+		
+		MockHttpServletResponse response=andReturn.getResponse();
+		int status=response.getStatus();
+		assertEquals(200,status);
+			
+	}
 
 }
